@@ -1,0 +1,4 @@
+# just specifying the closest version that was working when last tested. Worked with 2.1.3, so this should work fine too
+panflute==2.1.*
+openai
+python-dotenv

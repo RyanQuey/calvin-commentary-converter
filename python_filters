@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+# for why not using .py extension https://github.com/sergiocorreia/panflute/issues/110
+
+# source: https://stackoverflow.com/a/41923331/6952495
+
+import panflute as pf
+
+def increase_header_level(elem, doc):
+    """
+    taken from home page of docs. http://scorreia.com/software/panflute/
+    TODO try to use to format headers programatically??? Not sure what for yet, but I think I will want this
+    """
+
+    if type(elem) == Header:
+        if elem.level < 6:
+            elem.level += 1
+        else:
+            return [] #  Delete headers already in level 6
+
+def remove_underline(elem, doc):
+    """
+    - `markdown` format has nasty curly brace format after for underlines `{.underline}
+    - This removes those braces and underline
+    - I made this one myself...hopefully it works well
+    """
+    if isinstance(elem, pf.Underline):
+        # just returning as Span item, which is a generic instance. Underline is instance of Inline and so is Span, so hopefully this works
+        return pf.Span(*elem.content)
+
+    return elem
+
+
+# https://github.com/sergiocorreia/panflute-filters/blob/master/filters/convert_lists.py
+def ordered_to_unordered_lists(elem, doc):
+    if isinstance(elem, pf.OrderedList):
+        return pf.BulletList(*elem.content)
+
+def change_md_link(elem, doc):
+    """
+    - `markdown` format has nasty curly brace format after image tags that show up as plaintext in obsidian. (see https://stackoverflow.com/a/41923331/6952495)
+    - This removes those image tags and uses plain markdown ![]() format.
+    - Alternative is to use github markdown...but that uses html tag, which is worse since obsidian doesn't support img tags at all (due to electron security reasons)
+    """
+    if isinstance(elem, pf.Image):
+        elem.attributes.pop('width', None)
+        elem.attributes.pop('height', None)
+    return elem
+
+def remove_rtl_direction(elem, doc):
+    """
+    - pandoc `markdown` format adds these curly braces and "dir=rtl" attribute. Ugly in Obsidian. Let's remove.
+    """
+    if isinstance(elem, pf.Span):
+        elem.attributes.pop('dir', None)
+
+    return elem
+
+def remove_superscript(elem, doc):
+    """
+    - needed for `markdown` style, obsidian doesn't accept superscript like pandoc does it
+    - don't try converting to html superscript either, since that adds curly braces annotation and stuff that obsidian also doesn't recognize. Just remove it for now
+    """
+    if isinstance(elem, pf.Superscript) and doc.format == 'markdown':
+        text = f"<sup>{pf.stringify(elem)}</sup>"
+        # this almost works, it runs but pandoc escapes the angle brackets and so then obsidian doesn't recognize
+        # return [pf.Str("<sup>")] + list(elem.content) + [pf.Str("</sup>")]
+        # still puts the curly braces at end, just with diffent string inside the braces
+        # return pf.RawInline(text, format="rtf")
+        # this almost works, it runs but pandoc escapes the angle brackets and so then obsidian doesn't recognize
+        # return pf.Str(text)
+
+        # easy way to strip the container out, so it's no longer superscripted. Downside is just for e.g., BDAG, it has superscripted stuff that won't work. 
+        return list(elem.content)
+
+if __name__ == "__main__":
+    #pf.run_filter(change_md_link)
+    filters = [change_md_link, remove_superscript, ordered_to_unordered_lists, remove_underline, remove_rtl_direction]
+
+    pf.run_filters(filters)
+
