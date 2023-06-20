@@ -7,7 +7,8 @@ base_path = Path(__file__).parent
 
 #file_path = (base_path / "../sample-text/sample-commentary-text.2.8-15.unchanged.md").resolve()
 
-file_path = (base_path / "./sample-text/sample-commentary-text.2.8-15.unchanged.txt").resolve()
+#file_path = (base_path / "./sample-text/sample-commentary-text.2.8-15.unchanged.txt").resolve()
+file_path = (base_path / "./sample-text/sample-commentary-text.2.8-15.quotes-for-scr.txt").resolve()
 
 results_file_path = (base_path / "./results/Calvin.Colossians.2.8.GPT-result.txt")
 
@@ -32,7 +33,19 @@ api = "chat"
 please_continue = "Please continue"
 
 # TODO try different propmts
-prompt_base = "Update the language used in this ancient commentary to modern English:"
+# Nathan's original
+#prompt_base = "Update the language used in this ancient commentary to modern English:"
+# 0.0.3.1
+#prompt_base = "Update the language used in John Calvin's Bible commentary to modern English:"
+# 0.0.3.2
+#prompt_base = "Update the language used in John Calvin's Bible commentary to simple, modern English:"
+# 0.0.3.3
+#prompt_base = "Update the language used in John Calvin's Bible commentary to clear, modern English:"
+# 0.0.3.4
+prompt_base = "Update the language used in John Calvin's Colossians Bible commentary to clear, modern English:"
+# TODO not yet tried
+#prompt_base = "Update the language used in this ancient Bible commentary to modern English:"
+# TODO not yet tried
 #prompt_base = "Update the language used in this ancient commentary in markdown to modern English:"
 
 
@@ -44,7 +57,7 @@ divider = "\n"
 
 # TODO experiment with different blocks, to make sure results are repeatable. 
 
-n_lines = 3
+n_lines = 7
 # try all
 #n_lines = 2500
 
@@ -62,7 +75,7 @@ def start_conversation():
         #print("original text block:\n\n", head)
 
         prompt = f"{prompt_base}{divider}{commentary_text_block}"
-        #print("prompt:\n\n", prompt)
+        print("Using prompt:\n\n", prompt)
 
         messages.append({"role": "user", 
                          "content": prompt
