@@ -54,10 +54,6 @@ class SimplifyJob:
         # shouldn't need, using API key set by env var. (see .env file)
         #openai.api_key = "sk-..."
 
-        # experimenting with different apis. 
-        self.api = "chat"
-        #api = "completion"
-
 
         # TODO try different propmts
         # Nathan's original
@@ -78,8 +74,10 @@ class SimplifyJob:
 
         # 0.0.5.1-4
         #self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
-        # 0.0.5.5-  (currently using)
-        self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
+        # 0.0.5.5 
+        # self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
+        # 0.0.5.6
+        self.prompt_base = ""
 
 
         # TODO experiment with different blocks, to make sure results are repeatable. 
@@ -87,7 +85,7 @@ class SimplifyJob:
 
         self.final_result_arr = []
         self.has_more_to_say = False
-        self.messages = []
+        self.messages_base = []
 
         self.prompt_system = True
 
@@ -107,18 +105,21 @@ class SimplifyJob:
             # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a junior high school reading level:"
             # 0.0.5.5 ESL reading level - reword 
             self.system_text = "When I ask for help to update a markdown text, update the language to clear, modern English for ESL reading level:"
-            self.messages.append({
+            self.messages_base.append({
                 "role": "system", 
                 "content": self.system_text 
             })
 
+        # we'll put results in here.
+        # this as string
         self.commentary_text_block = None
+        # this as array of chunks, one per verse section
+        self.chunks = []
 
     def get_original_text(self):
         """
         Fetch the original English text of Calvin's commentaries that we need to simplify.
         """
-
 
         with open(self.file_path, "r") as f:
 
@@ -136,105 +137,133 @@ class SimplifyJob:
             else:
                 text = f.readlines()
 
-            self.commentary_text_block = "\n".join(text)
+            # divide into chunks
+            this_chunk = []
+
+            for line in text:
+                if line[:12] == "# Colossians":
+                    # can just write that to file directly and move on
+                    print(f"writing title to file: {line}")
+                    with open(self.results_file_path, 'a') as the_file:
+                        the_file.write(f"{line}\n")
+
+                elif line[:9] == "### Verse":
+                    # make that into new chunk
+
+                    # check if this chunk has anything worth saving
+                    this_chunk_has_something = False
+                    for chunk_line in this_chunk:
+                        if chunk_line != "\n" and chunk_line != "":
+                            this_chunk_has_something = True
+
+                    if this_chunk_has_something:
+                        # set it in the chunks for the file! If not, we can ignore and keep going (i.e., the first verse in the section won't need this...)
+                        self.chunks.append(this_chunk)
+                    # start over with just this line
+
+                    this_chunk = [line]
+
+                else:
+                    # put this line of text in the chunk, and continue.
+                    this_chunk.append(line)
+
+
+            # at this point, everything should be chunked out.
+
+            # Let's put all the text into a variable as well though.
+            self.commentary_text_block = "".join(text)
             #print("original text block:\n\n", text)
 
-            # Use delimiters to clearly indicate distinct parts of the input
-            # https://platform.openai.com/docs/guides/gpt-best-practices/six-strategies-for-getting-better-results
-            self.prompt = f"{self.prompt_base}\n\"\"\"\n{self.commentary_text_block}\"\"\""
 
-            self.messages.append({
-                "role": "user", 
-                "content": self.prompt
-            })
-            #print("Using prompt:\n\n", self.prompt)
+    def initialize_results_file(self):
+        """
+        creates (overwriting to blank if necessary) file to write results to
+        """
 
-    def start_conversation(self):
+        print(f"\n\n=== Writing to file: {self.results_file_path} ===\n\n")
+        with open(self.results_file_path, 'w') as the_file:
+            the_file.write("")
+
+    def start_conversation(self, chunk):
         """
         Start the conversation with the chat bot.
         """
 
-        print("Using messages:\n\n", self.messages)
+        # set prompt for this round
+        # Use delimiters to clearly indicate distinct parts of the input
+        # https://platform.openai.com/docs/guides/gpt-best-practices/six-strategies-for-getting-better-results
+        text_for_chunk = "".join(chunk)
+        prompt = f"{self.prompt_base}\n\"\"\"\n{text_for_chunk}\"\"\""
+
+        messages = self.messages_base + [{
+            "role": "user", 
+            "content": prompt
+        }]
+
+        print("Using messages:\n\n", messages)
 
         print("now sending to GPT API...")
-        # create a chat completion
-        if self.api == "chat":
-            chat_completion = openai.ChatCompletion.create(
-                model="gpt-4", 
-                messages=self.messages
-                )
-
-            print(chat_completion.choices)
-
-            # for now, just taking first choice only
-            assistant_message = chat_completion.choices[0].message
-            response = assistant_message.content
-
-            # if the chat bot finished because of length issue, then that means it has "more to say".
-            # NOTE for now, should never run into this since we didn't set a token limit for responses. 
-            self.has_more_to_say = chat_completion.choices[0].finish_reason == "length"
-
-            # append result, in case this conversation needs to continue
-            # TODO I think if we extend our token limit, we might not ever need to do this in the API? Check, would make things simpler.
-            self.messages.append(assistant_message)
-
-        else:
-            # note that gpt-4 is a chat model, so doesn't work with Completion api
-            # TODO never tested
-            completion = openai.Completion.create(
-                model="text-davinci-003", 
-                prompt=self.prompt
-                )
-            print(completion.choices)
-            response = completion.choices[0].message.content
-
-        # print the chat completion
-        print("Response for round:", response)
-
-        self.final_result_arr.append(response) 
-
-    def get_more(self):
-        """
-        - if need to request more results from server.
-        """
-        # append 
-        self.messages.append({"role": "user", "content": PLEASE_CONTINUE})
-        print("now sending another round to GPT API...(please wait)")
-        next_chat_completion = openai.ChatCompletion.create(
+        # send request to OpenAI GPT-4 API for 
+        chat_completion = openai.ChatCompletion.create(
             model="gpt-4", 
-            messages=self.messages
+            messages=messages
             )
 
-        # TODO make this into a loop, incase we have to do this multiple times. 
-        assistant_message = next_chat_completion.choices[0].message
+        print(chat_completion.choices)
+
+        # for now, just taking first choice only
+        assistant_message = chat_completion.choices[0].message
         response = assistant_message.content
-        self.has_more_to_say = next_chat_completion.choices[0].finish_reason == "length"
 
-        # append result, in case this conversation needs to continue
-        # TODO I think if we extend our token limit, we might not ever need to do this in the API? Check, would make things simpler.
-        self.messages.append(assistant_message)
-        print("Response for round:", response)
+        # if the chat bot finished because of length issue, then that means it has "more to say".
+        # NOTE for now, should never run into this since we didn't set a token limit for responses. 
+        self.has_more_to_say = chat_completion.choices[0].finish_reason == "length"
 
-        self.final_result_arr.append(response) 
 
-    def write_to_file(self):
+        # print the chat completion
+        #print("Response for round:", response)
+        cleaned_response = self.clean_results(response)
+        print("Cleaned Response for round:", cleaned_response)
+
+        self.final_result_arr.append(cleaned_response) 
+
+        # append to file
+        self.append_to_file(text_for_chunk, cleaned_response)
+
+    def clean_results(self, results_chunk):
         """
-        Take final results and save to disk.
+        Takes results we get back from API and cleans it.
+
+        @param results_chunk arr - array of lines from text we got back.
+        """
+
+        cleaned_response = results_chunk
+        if cleaned_response[:4] == '""" ':
+            # if the api returned our triple string...
+            # then strip those off!
+            cleaned_response = cleaned_response[4:]
+
+        if cleaned_response[-3:] == '"""':
+            # if the api returned our triple string at end...
+            # then strip those off!
+            cleaned_response = cleaned_response[:-3]
+
+        return cleaned_response
+
+    def append_to_file(self, original_text_for_chunk, result_text):
+        """
+        Take final results for a single chunk and save to end of file.
         """
         # turn from array into string with new lines. This seems to be preferred way in Python to write to file. 
-        self.final_result_text = "\n".join(self.final_result_arr)
 
-        print("\n\n=== FINAL RESULT===\n\n")
-        print(self.final_result_text)
-        print(f"\n\n=== Writing to file: {self.results_file_path} ===\n\n")
+        print("\n\n=== FINAL RESULT for chunk ===\n\n")
+        print(result_text)
+        with open(self.results_file_path, 'a') as the_file:
+            the_file.write("## Original Text:\n")
+            the_file.write(original_text_for_chunk)
 
-        with open(self.results_file_path, 'w') as the_file:
-            the_file.write("# Original Text:\n")
-            the_file.write(self.commentary_text_block)
-
-            the_file.write("\n\n# Simplified Text:\n")
-            the_file.write(self.final_result_text)
-
+            the_file.write("\n\n## Simplified Text:\n")
+            the_file.write(result_text)
 
 if __name__ == "__main__":
     # whether or not we're looping over all markdown in a folder.
@@ -242,6 +271,7 @@ if __name__ == "__main__":
 
     args = sys.argv
     testing = len(args) > 0 and args[0] == "test"
+    print("args", args)
 
     if testing:
         # list models
@@ -258,6 +288,7 @@ if __name__ == "__main__":
         directory_path = (base_path / f"./{original_folder}/chunks-for-ingestion").resolve()
         directory = os.fsencode(directory_path)
 
+    # iterate over all files in the ingestion folder
     for file in os.listdir(directory):
         # This should be filename of path to original text
          filename = os.fsdecode(file)
@@ -268,12 +299,13 @@ if __name__ == "__main__":
 
              job = SimplifyJob(testing, filename, original_folder)
              job.get_original_text()
-             job.start_conversation()
+             job.initialize_results_file()
+             for chunk in job.chunks:
+                 print("\n = sending chunk = ")
+                 job.start_conversation(chunk)
 
              if job.has_more_to_say:
                  job.get_more()
-
-             job.write_to_file()
 
              # TODO remove when finished testing
              #break
