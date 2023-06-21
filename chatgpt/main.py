@@ -11,7 +11,7 @@ base_path = Path(__file__).parent
 PLEASE_CONTINUE = "Please continue"
 
 class SimplifyJob:
-    def __init__(self, testing, original_text_filename, original_folder):
+    def __init__(self, testing, original_text_filename, original_folder, bible_book):
         self.testing = testing
         #testing = True
         print(f"testing: {self.testing}")
@@ -23,7 +23,7 @@ class SimplifyJob:
         self.formatted_base_text_version = "2.4"
         ####
         if self.testing:
-            self.filename_base = f"sample-commentary-text.2.8-15.from-{self.formatted_base_text_version}.quotes-for-scr"
+            self.filename_base = os.path.splitext(original_text_filename)[0]
 
         else:
             # NOTE GPT-4 model's max length is 8192 tokens. For example, Coloissians as a whole is 42253 tokens (file was 181 kb). So about a little less than 1/5 of that is ideal target (maybe 36 kb).  
@@ -39,7 +39,7 @@ class SimplifyJob:
         # Result files
         ####################
         ####
-        self.conversion_script_version = "0.0.5.5"
+        self.conversion_script_version = "0.1.0.0"
         # For testing
         # (depending on how big of a chunk)
 
@@ -75,9 +75,10 @@ class SimplifyJob:
         # 0.0.5.1-4
         #self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
         # 0.0.5.5 
-        self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
-        # 0.0.5.6
-        # self.prompt_base = ""
+        # self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
+        # 0.0.5.6- (currently using)
+        # so...let's put the prompt in the system. THen let user just put in calvin's stuff. Hopefully this will avoid having hte system think it needs to summarize my statement about triple quotes
+        self.prompt_base = ""
 
 
         # TODO experiment with different blocks, to make sure results are repeatable. 
@@ -104,7 +105,10 @@ class SimplifyJob:
             # 0.0.5.4 Junior High school reading level
             # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a junior high school reading level:"
             # 0.0.5.5 ESL reading level - reword 
-            self.system_text = "When I ask for help to update a markdown text, update the language to clear, modern English for ESL reading level:"
+            # self.system_text = f"When I ask for help to update a markdown text, update the language which was taken from a 19th century Bible commentary to clear, modern English for ESL reading level:"
+
+            # 0.1.0.0 ESL reading level - specify book of Bible
+            self.system_text = f"When I ask for help to update a markdown text, update the language which was taken from a 19th century Bible commentary on the book of {bible_book} to clear, modern English for ESL reading level:"
             self.messages_base.append({
                 "role": "system", 
                 "content": self.system_text 
@@ -127,7 +131,7 @@ class SimplifyJob:
             if self.testing:
                 # n_lines = 3
                 # 5 lines gets the first part of 2:8, which is enough for quick iteration/testing
-                n_lines = 5
+                n_lines = 7
 
                 # 19 lines gets 2:8-9
                 # n_lines = 19
@@ -145,7 +149,7 @@ class SimplifyJob:
                     # can just write that to file directly and move on
                     print(f"writing title to file: {line}")
                     with open(self.results_file_path, 'a') as the_file:
-                        the_file.write(f"{line}\n")
+                        the_file.write(line)
 
                 elif line[:9] == "### Verse":
                     # make that into new chunk
@@ -162,11 +166,21 @@ class SimplifyJob:
                     # start over with just this line
 
                     this_chunk = [line]
+                    print(f"Making new chunk for: {line}")
 
                 else:
                     # put this line of text in the chunk, and continue.
                     this_chunk.append(line)
 
+            # then make sure to push in that last chunk
+            this_chunk_has_something = False
+            for chunk_line in this_chunk:
+                if chunk_line != "\n" and chunk_line != "":
+                    this_chunk_has_something = True
+
+            if this_chunk_has_something:
+                # set it in the chunks for the file! If not, we can ignore and keep going (i.e., the first verse in the section won't need this...)
+                self.chunks.append(this_chunk)
 
             # at this point, everything should be chunked out.
 
@@ -193,7 +207,8 @@ class SimplifyJob:
         # Use delimiters to clearly indicate distinct parts of the input
         # https://platform.openai.com/docs/guides/gpt-best-practices/six-strategies-for-getting-better-results
         text_for_chunk = "".join(chunk)
-        prompt = f"{self.prompt_base}\n\"\"\"\n{text_for_chunk}\"\"\""
+        #prompt = f"{self.prompt_base}\n\"\"\"\n{text_for_chunk}\"\"\""
+        prompt = text_for_chunk
 
         messages = self.messages_base + [{
             "role": "user", 
@@ -264,13 +279,16 @@ class SimplifyJob:
 
             the_file.write("\n\n## Simplified Text:\n")
             the_file.write(result_text)
+            # at least one is very necessary, or next original text shows up wrong. Two is just a little easier to read. 
+            the_file.write("\n\n")
 
 if __name__ == "__main__":
     # whether or not we're looping over all markdown in a folder.
     running_on_all_in_dir = True
+    bible_book = "Colossians"
 
     args = sys.argv
-    testing = len(args) > 0 and args[0] == "test"
+    testing = len(args) > 1 and args[1] == "test"
     print("args", args)
 
     if testing:
@@ -297,9 +315,9 @@ if __name__ == "__main__":
              print(f"running file: {filename}")
              # print(os.path.join(directory, filename))
 
-             job = SimplifyJob(testing, filename, original_folder)
-             job.get_original_text()
+             job = SimplifyJob(testing, filename, original_folder, bible_book)
              job.initialize_results_file()
+             job.get_original_text()
              for chunk in job.chunks:
                  print("\n = sending chunk = ")
                  job.start_conversation(chunk)
