@@ -75,9 +75,9 @@ class SimplifyJob:
         # 0.0.5.1-4
         #self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
         # 0.0.5.5 
-        # self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
+        self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
         # 0.0.5.6
-        self.prompt_base = ""
+        # self.prompt_base = ""
 
 
         # TODO experiment with different blocks, to make sure results are repeatable. 
