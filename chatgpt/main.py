@@ -39,7 +39,7 @@ class SimplifyJob:
         # Result files
         ####################
         ####
-        self.conversion_script_version = "0.0.5.4"
+        self.conversion_script_version = "0.0.5.5"
         # For testing
         # (depending on how big of a chunk)
 
@@ -115,6 +115,9 @@ class SimplifyJob:
         self.commentary_text_block = None
 
     def get_original_text(self):
+        """
+        Fetch the original English text of Calvin's commentaries that we need to simplify.
+        """
 
 
         with open(self.file_path, "r") as f:
@@ -168,6 +171,7 @@ class SimplifyJob:
             response = assistant_message.content
 
             # if the chat bot finished because of length issue, then that means it has "more to say".
+            # NOTE for now, should never run into this since we didn't set a token limit for responses. 
             self.has_more_to_say = chat_completion.choices[0].finish_reason == "length"
 
             # append result, in case this conversation needs to continue

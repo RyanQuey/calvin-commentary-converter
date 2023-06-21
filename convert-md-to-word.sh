@@ -30,7 +30,7 @@ which python3
 
 # for .docx files
 # wrap path in single quotes to easily handle spaces in folder names, which is common for my ONedrive folders
-find $path_to_scan -name "*.*" | while read i; 
+find $path_to_scan -name "*.txt" | while read i; 
 do 
     printf "\nconverting:        $i";  
 
