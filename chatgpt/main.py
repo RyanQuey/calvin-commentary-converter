@@ -1,116 +1,115 @@
 import openai
+import os
 from dotenv import load_dotenv
 from pathlib import Path
+import sys
 
 load_dotenv()
+# the folder that this current file is in
 base_path = Path(__file__).parent
 
+PLEASE_CONTINUE = "Please continue"
+
 class SimplifyJob:
+    def __init__(self, testing, original_text_filename, original_folder):
+        self.testing = testing
+        #testing = True
+        print(f"testing: {self.testing}")
 
-    testing = False
-    #testing = True
-    print(f"testing: {testing}")
+        ####################
+        # Files to send through
+        ####################
+        # see Ryan's Obsidian notes for what these version numbers refer to.
+        self.formatted_base_text_version = "2.4"
+        ####
+        if self.testing:
+            self.filename_base = f"sample-commentary-text.2.8-15.from-{self.formatted_base_text_version}.quotes-for-scr"
 
-    ####################
-    # Files to send through
-    ####################
-    # see Ryan's Obsidian notes for what these version numbers refer to.
-    formatted_base_text_version = "2.4"
-    ####
-    if testing:
-        # file_path = (base_path / f"./sample-text/sample-commentary-text.2.8-15.from-{formatted_base_text_version}.quotes-for-scr.txt").resolve()
-        # for using markdown instead
-        file_path = (base_path / f"./sample-text/sample-commentary-text.2.8-15.from-{formatted_base_text_version}.quotes-for-scr.md").resolve()
-    else:
-        # file_path = (base_path / f"./original-text/Calvin.Colossians.en.{formatted_base_text_version} - ch.1.md").resolve()
-        file_path = (base_path / f"./sample-text/sample-commentary-text.2.8-15.from-{formatted_base_text_version}.quotes-for-scr.md").resolve()
-        # file_path = (base_path / f"./original-text/Calvin.Colossians.en.{formatted_base_text_version} - ch.2.md").resolve()
-        # file_path = (base_path / f"./original-text/Calvin.Colossians.en.{formatted_base_text_version} - ch.3.md").resolve()
-        # file_path = (base_path / f"./original-text/Calvin.Colossians.en.{formatted_base_text_version} - ch.4.md").resolve()
+        else:
+            # NOTE GPT-4 model's max length is 8192 tokens. For example, Coloissians as a whole is 42253 tokens (file was 181 kb). So about a little less than 1/5 of that is ideal target (maybe 36 kb).  
 
-    ####################
-    # Result files
-    ####################
-    ####
-    conversion_script_version = "0.0.5.3"
-    # For testing
-    # (depending on how big of a chunk)
+            # can use if want to do manually
+            self.filename_base = os.path.splitext(original_text_filename)[0]
+            # self.filename_base = "Calvin.Colossians.en.2.4 - ch.01.1-14"
 
-    ####
-    if testing:
-        results_file_path = (base_path / f"./results/Col.2.8a_v.{conversion_script_version}.txt")
-        #results_file_path = (base_path / f"./results/Col.2.8-9_v.{conversion_script_version}.txt")
-    else:
-        results_file_path = (base_path / f"./results/Colossians.whole_v.{conversion_script_version}.txt")
+        self.file_path = (base_path / f"./{original_folder}/chunks-for-ingestion/{self.filename_base}.md").resolve()
+        #self.file_path = (base_path / f"./{original_folder}/{self.filename_base}.txt").resolve()
 
+        ####################
+        # Result files
+        ####################
+        ####
+        self.conversion_script_version = "0.0.5.3"
+        # For testing
+        # (depending on how big of a chunk)
 
-    # shouldn't need, using API key set by env var. (see .env file)
-    #openai.api_key = "sk-..."
+        if self.testing:
+            self.results_subdir = "test"
+        else:
+            self.results_subdir = "prod"
 
-    if testing:
-        # list models
-        models = openai.Model.list()
-
-        # print the first model's id
-        #print("all models", models.data)
-        print("first model available in OpenAI's API:", models.data[0].id)
-
-    # experimenting with different apis. 
-    api = "chat"
-    #api = "completion"
-
-    please_continue = "Please continue"
-
-    # TODO try different propmts
-    # Nathan's original
-    #prompt_base = "Update the language used in this ancient commentary to modern English:"
-    # TODO not yet tried
-    #prompt_base = "Update the language used in this ancient Bible commentary to modern English:"
-    # TODO not yet tried
-    #prompt_base = "Update the language used in this ancient commentary in markdown to modern English:"
-
-    # 0.0.3.1
-    #prompt_base = "Update the language used in John Calvin's Bible commentary to modern English:"
-    # 0.0.3.2
-    #prompt_base = "Update the language used in John Calvin's Bible commentary to simple, modern English:"
-    # 0.0.3.3
-    #prompt_base = "Update the language used in John Calvin's Bible commentary to clear, modern English:"
-    # 0.0.3.4 -- 0.0.4.2
-    #prompt_base = "Update the text delimited by triple quotes used in John Calvin's Colossians Bible commentary to clear, modern English:"
-
-    # 0.0.5.1-______  (currently using)
-    prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
+        self.results_file_path = (base_path / f"./results/{self.results_subdir}/{self.filename_base}_v.{self.conversion_script_version}.txt")
 
 
-    # TODO experiment with different blocks, to make sure results are repeatable. 
-    # - Note that longer blocks take longer to get response, and eat up more quota. 
+        # shouldn't need, using API key set by env var. (see .env file)
+        #openai.api_key = "sk-..."
 
-    final_result_arr = []
-    has_more_to_say = False
-    messages = []
+        # experimenting with different apis. 
+        self.api = "chat"
+        #api = "completion"
 
-    prompt_system = True
 
-    # https://platform.openai.com/docs/guides/gpt-best-practices/tactic-ask-the-model-to-adopt-a-persona
-    if prompt_system:
-        print("adding system prompt")
+        # TODO try different propmts
+        # Nathan's original
+        #prompt_base = "Update the language used in this ancient commentary to modern English:"
+        # TODO not yet tried
+        #prompt_base = "Update the language used in this ancient Bible commentary to modern English:"
+        # TODO not yet tried
+        #prompt_base = "Update the language used in this ancient commentary in markdown to modern English:"
 
-        # 0.0.5.1 - Just leaving for now
-        #system_text = "When I ask for help to update a markdown text, update to clear, modern English:"
-        # 0.0.5.2 High school reading level
-        # system_text = "When I ask for help to update a markdown text, update to clear, modern English at a high school reading level:"
-        # 0.0.5.3 ESL reading level
-        system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level:"
-        # 0.0.5.3.2 ESL reading level - remove passive
-        #system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level (when possible use active voice instead of passive voice):"
-        # 0.0.5.4 Junior High school reading level
-        # system_text = "When I ask for help to update a markdown text, update to clear, modern English at a junior high school reading level:"
-        messages.append({
-            "role": "system", 
-            "content": system_text 
-        })
+        # 0.0.3.1
+        #prompt_base = "Update the language used in John Calvin's Bible commentary to modern English:"
+        # 0.0.3.2
+        #prompt_base = "Update the language used in John Calvin's Bible commentary to simple, modern English:"
+        # 0.0.3.3
+        #prompt_base = "Update the language used in John Calvin's Bible commentary to clear, modern English:"
+        # 0.0.3.4 -- 0.0.4.2
+        #prompt_base = "Update the text delimited by triple quotes used in John Calvin's Colossians Bible commentary to clear, modern English:"
 
-    commentary_text_block = None
+        # 0.0.5.1-______  (currently using)
+        #self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
+        self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Bible commentary on the book of Colossians:"
+
+
+        # TODO experiment with different blocks, to make sure results are repeatable. 
+        # - Note that longer blocks take longer to get response, and eat up more quota. 
+
+        self.final_result_arr = []
+        self.has_more_to_say = False
+        self.messages = []
+
+        self.prompt_system = True
+
+        # https://platform.openai.com/docs/guides/gpt-best-practices/tactic-ask-the-model-to-adopt-a-persona
+        if self.prompt_system:
+            print("adding system prompt")
+
+            # 0.0.5.1 - Just leaving for now
+            # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English:"
+            # 0.0.5.2 High school reading level
+            # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a high school reading level:"
+            # 0.0.5.3 ESL reading level
+            self.system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level:"
+            # 0.0.5.3.2 ESL reading level - remove passive
+            # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level (when possible use active voice instead of passive voice):"
+            # 0.0.5.4 Junior High school reading level
+            # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a junior high school reading level:"
+            self.messages.append({
+                "role": "system", 
+                "content": self.system_text 
+            })
+
+        self.commentary_text_block = None
 
     def get_original_text(self):
 
@@ -126,7 +125,7 @@ class SimplifyJob:
                 # 19 lines gets 2:8-9
                 # n_lines = 19
 
-                text = [next(f) for _ in range(0, self.n_lines)]
+                text = [next(f) for _ in range(0, n_lines)]
 
             else:
                 text = f.readlines()
@@ -136,7 +135,7 @@ class SimplifyJob:
 
             # Use delimiters to clearly indicate distinct parts of the input
             # https://platform.openai.com/docs/guides/gpt-best-practices/six-strategies-for-getting-better-results
-            self.prompt = f"{self.prompt_base}\n\"\"\"{self.commentary_text_block}\"\"\""
+            self.prompt = f"{self.prompt_base}\n\"\"\"\n{self.commentary_text_block}\"\"\""
 
             self.messages.append({
                 "role": "user", 
@@ -192,7 +191,7 @@ class SimplifyJob:
         - if need to request more results from server.
         """
         # append 
-        self.messages.append({"role": "user", "content": please_continue})
+        self.messages.append({"role": "user", "content": PLEASE_CONTINUE})
         print("now sending another round to GPT API...(please wait)")
         next_chat_completion = openai.ChatCompletion.create(
             model="gpt-4", 
@@ -231,11 +230,47 @@ class SimplifyJob:
 
 
 if __name__ == "__main__":
-    job = SimplifyJob()
-    job.get_original_text()
-    job.start_conversation()
+    # whether or not we're looping over all markdown in a folder.
+    running_on_all_in_dir = True
 
-    if job.has_more_to_say:
-        job.get_more()
+    args = sys.argv
+    testing = len(args) > 0 and args[0] == "test"
 
-    job.write_to_file()
+    if testing:
+        # list models
+        models = openai.Model.list()
+
+        # print the first model's id
+        #print("all models", models.data)
+        print("first model available in OpenAI's API:", models.data[0].id)
+        original_folder = "sample-text"
+    else:
+        original_folder = "original-text"
+
+    if running_on_all_in_dir:
+        directory_path = (base_path / f"./{original_folder}/chunks-for-ingestion").resolve()
+        directory = os.fsencode(directory_path)
+
+    for file in os.listdir(directory):
+        # This should be filename of path to original text
+         filename = os.fsdecode(file)
+         print(f"\n==========================")
+         if filename.endswith(".md"): 
+             print(f"running file: {filename}")
+             # print(os.path.join(directory, filename))
+
+             job = SimplifyJob(testing, filename, original_folder)
+             job.get_original_text()
+             job.start_conversation()
+
+             if job.has_more_to_say:
+                 job.get_more()
+
+             job.write_to_file()
+
+             # TODO remove when finished testing
+             break
+
+         else:
+             print(f"(skipping file/dir: {filename})")
+             continue
