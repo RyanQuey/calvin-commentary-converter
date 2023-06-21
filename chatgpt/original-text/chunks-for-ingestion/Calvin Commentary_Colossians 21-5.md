@@ -38,5 +38,5 @@ By this he means, that those are out of danger who remain in Christ, but that th
 
  "Rejoicing", says he, "And seeing", that is — “Because "I see".” For "and" means "for", as is customary among the Latins and Greeks. “Go on as you have begun, for I know that hitherto you have pursued the right course, inasmuch as distance of place does not prevent me from beholding you with the eyes of the mind.”
 
-. "Order and steadfastness." He mentions two things, in which the perfection of the Church consists.
+"Order and steadfastness." He mentions two things, in which the perfection of the Church consists  — "order" among themselves, and "faith" in Christ. By the term "order", he means — agreement, no less than duly regulated morals, and entire discipline. He commends their "faith", in respect of its constancy and steadfastness, meaning that it is an empty shadow of faith, when the mind wavers and vacillates between different opinions. 
 

@@ -39,7 +39,7 @@ class SimplifyJob:
         # Result files
         ####################
         ####
-        self.conversion_script_version = "0.0.5.3"
+        self.conversion_script_version = "0.0.5.4"
         # For testing
         # (depending on how big of a chunk)
 
@@ -48,7 +48,7 @@ class SimplifyJob:
         else:
             self.results_subdir = "prod"
 
-        self.results_file_path = (base_path / f"./results/{self.results_subdir}/{self.filename_base}_v.{self.conversion_script_version}.txt")
+        self.results_file_path = (base_path / f"./results/{self.results_subdir}/{self.filename_base}_SIMPLIFIED_v.{self.conversion_script_version}.txt")
 
 
         # shouldn't need, using API key set by env var. (see .env file)
@@ -76,9 +76,10 @@ class SimplifyJob:
         # 0.0.3.4 -- 0.0.4.2
         #prompt_base = "Update the text delimited by triple quotes used in John Calvin's Colossians Bible commentary to clear, modern English:"
 
-        # 0.0.5.1-______  (currently using)
+        # 0.0.5.1-4
         #self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Colossians Bible commentary:"
-        self.prompt_base = "Please help to update the following markdown text delimited by triple quotes, which was taken from John Calvin's Bible commentary on the book of Colossians:"
+        # 0.0.5.5-  (currently using)
+        self.prompt_base = "Please update the following markdown text delimited by triple quotes, which was taken from a 19th century Bible commentary:"
 
 
         # TODO experiment with different blocks, to make sure results are repeatable. 
@@ -99,11 +100,13 @@ class SimplifyJob:
             # 0.0.5.2 High school reading level
             # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a high school reading level:"
             # 0.0.5.3 ESL reading level
-            self.system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level:"
+            # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level:"
             # 0.0.5.3.2 ESL reading level - remove passive
             # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English for ESL reading level (when possible use active voice instead of passive voice):"
             # 0.0.5.4 Junior High school reading level
             # self.system_text = "When I ask for help to update a markdown text, update to clear, modern English at a junior high school reading level:"
+            # 0.0.5.5 ESL reading level - reword 
+            self.system_text = "When I ask for help to update a markdown text, update the language to clear, modern English for ESL reading level:"
             self.messages.append({
                 "role": "system", 
                 "content": self.system_text 
@@ -269,7 +272,7 @@ if __name__ == "__main__":
              job.write_to_file()
 
              # TODO remove when finished testing
-             break
+             #break
 
          else:
              print(f"(skipping file/dir: {filename})")

@@ -2,7 +2,7 @@
 
 
 ### Verse 6.
-  — "order" among themselves, and "faith" in Christ. By the term "order", he means — agreement, no less than duly regulated morals, and entire discipline. He commends their "faith", in respect of its constancy and steadfastness, meaning that it is an empty shadow of faith, when the mind wavers and vacillates between different opinions. "As ye have received." To commendation he adds exhortation, in which he teaches them that their having once received Christ will be of no advantage to them, unless they remain in him. Farther, as the false apostles held forth Christ’s name with a view to deceive, he obviates this danger twice, by exhorting them to go on as they "had been taught", and as they "had received Christ". For in these words he admonishes them, that they must adhere to the doctrine which they had embraced, as delivered to them by Epaphras, with so much constancy, as to be on their guard against every other doctrine and faith, in accordance with what Isaiah said,
+"As ye have received." To commendation he adds exhortation, in which he teaches them that their having once received Christ will be of no advantage to them, unless they remain in him. Farther, as the false apostles held forth Christ’s name with a view to deceive, he obviates this danger twice, by exhorting them to go on as they "had been taught", and as they "had received Christ". For in these words he admonishes them, that they must adhere to the doctrine which they had embraced, as delivered to them by Epaphras, with so much constancy, as to be on their guard against every other doctrine and faith, in accordance with what Isaiah said,
 
 This is the way, walk ye in it. (Isaiah 30 21.)
 
