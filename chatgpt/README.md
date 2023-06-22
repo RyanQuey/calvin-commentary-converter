@@ -20,8 +20,12 @@ This is commentary about verse 10...
 
 
 
-## Step 2 - Split markdown for ingestion
-### 2.1 Put it into chapters, one chapter per file 
+## 2. Clean up for ingestion
+
+Split markdown for ingestion
+Put it into chapters, one chapter per file 
+
+## 
 
 #### Q: Why Markdown?
 - It preserves some formatting/headers which ChatGPT actually seems to recognize and take advantage of. 
