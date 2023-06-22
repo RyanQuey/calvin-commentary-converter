@@ -9,6 +9,9 @@ For converting from old English markdown to modern
 - Some general notes though have been added below for convenience 
     - TODO put all notes in here, for sharing with others etc.
 
+## Step 0 - Install
+- For installation, see [project README](../README.md)
+
 ## Step 1 - Prepare markdown for ingestion
 - At end of this process, files should have all verses as a header, e.g.:
 

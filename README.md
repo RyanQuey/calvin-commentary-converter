@@ -14,7 +14,7 @@ Note that pandoc will use default python, so whatever version of python is ran b
 Therefore, don't install using `pip3 install`, but use `pip install`
 
 ## Install pandoc
-Needs pandoc 2.1 or later that allows lua filters, so get latest release using .deb file from pandoc releases on Github (NOTE as of Dec 2022, can do `apt-get install pandoc` if in new enough Ubuntu version. 18.04 Bionic, which ships with WSL2, is too old, giving 1.19.2, but focal or jammy (20.04 or 22.04) are fine. 
+Needs pandoc 2.1 or later that allows lua filters, so get latest release using .deb file from pandoc releases on Github (NOTE as of Dec 2022, can do `sudo apt-get install pandoc` if in new enough Ubuntu version. 18.04 Bionic, which ships with WSL2, is too old, giving 1.19.2, but focal or jammy (20.04 or 22.04) are fine. 
 
 - https://github.com/jgm/pandoc/blob/master/INSTALL.md#linux
 
@@ -36,21 +36,5 @@ You can confirm it's new enough by running: `pandoc --help | grep lua-filter`
 - Should show the option
 
 
-# Usage Patterns
-## Jan 2022
-First, converting all files recursively
-```
-~/projects/document-convertor/recursive-word-to-md.sh .
-```
-
-Then, when about to make changes, cleanup the word docs in a given folder
-```
-~/projects/document-convertor/move-docx-to-backup-zip.sh .
-```
-
-If using WSL2, I like to right click when in explorer to use "Open in Windows Terminal" to get into WSL, and then from the terminal, can go to the explorer using:
-```
-explorer.exe .
-```
-
-This makes it easy to check and make sure things look right, etc. 
+# Usage 
+See [README](./chatgpt/README.md)
