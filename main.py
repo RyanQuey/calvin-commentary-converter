@@ -1,10 +1,12 @@
 import openai
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 from pathlib import Path
 import sys
 
 load_dotenv()
+config = dotenv_values(".env")
+openai.api_key = os.environ["OPENAI_API_KEY"]
 # the folder that this current file is in
 base_path = Path(__file__).parent
 
@@ -32,7 +34,7 @@ class SimplifyJob:
             self.filename_base = os.path.splitext(original_text_filename)[0]
             # self.filename_base = "Calvin.Colossians.en.2.4 - ch.01.1-14"
 
-        self.file_path = (base_path / f"./{original_folder}/chunks-for-ingestion/{self.filename_base}.md").resolve()
+        self.file_path = (base_path / f"./chatgpt/{original_folder}/chunks-for-ingestion/{self.filename_base}.md").resolve()
         #self.file_path = (base_path / f"./{original_folder}/{self.filename_base}.txt").resolve()
 
         ####################
@@ -48,7 +50,7 @@ class SimplifyJob:
         else:
             self.results_subdir = "prod"
 
-        self.results_file_path = (base_path / f"./results/{self.results_subdir}/{self.filename_base}_SIMPLIFIED_v.{self.conversion_script_version}.txt")
+        self.results_file_path = (base_path / f"./chatgpt/results/{self.results_subdir}/{self.filename_base}_SIMPLIFIED_v.{self.conversion_script_version}.txt")
 
 
         # shouldn't need, using API key set by env var. (see .env file)
@@ -303,7 +305,7 @@ if __name__ == "__main__":
         original_folder = "original-text"
 
     if running_on_all_in_dir:
-        directory_path = (base_path / f"./{original_folder}/chunks-for-ingestion").resolve()
+        directory_path = (base_path / f"./chatgpt/{original_folder}/chunks-for-ingestion").resolve()
         directory = os.fsencode(directory_path)
 
     # iterate over all files in the ingestion folder

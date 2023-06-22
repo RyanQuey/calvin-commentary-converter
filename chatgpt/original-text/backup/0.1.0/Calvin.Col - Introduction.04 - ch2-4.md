@@ -1,0 +1,9 @@
+## Chapter Two
+In the "Second Chapter" he opens up more distinctly than he had done the reason which had induced him to write — that he might provide against the danger which he saw to be impending over them, while he touches, in passing, on the affection which he cherishes towards them, that they may know that their welfare is the object of his concern. From this he proceeds to exhortation, by which he applies the foregoing doctrine, as it were, to present use; for he bids them rest in Christ alone, and brands as vanity everything that is apart from Christ. He speaks particularly of circumcision, abstinence from food, and of other outward exercises — in which they mistakingly made the service of God to consist; and also of the absurd worship of angels, whom they put in Christ’s room. Having made mention of circumcision, he takes occasion to notice also, in passing, what is the office, and what is the nature of ceremonies — from which he lays it down as a settled point that they have been abrogated by Christ. These things are treated of till the end of the "Second Chapter".
+
+## Chapter Three
+In the "Third Chapter", in opposition to those vain prescriptions, to the observance of which the false apostles were desirous to bind believers, he makes mention of those true offices of piety in which the Lord would have us employ ourselves; and he begins with the very "spring-head" — that is, mortification of the flesh and newness of life. From this he derives the "streams" — that is, particular exhortations, some of which apply to all Christians alike, while others relate more especially to particular individuals, according to the nature of their calling.
+
+## Chapter Four
+In the beginning of the "Fourth Chapter" he follows out the same subject: afterwards, having commended himself to their prayers, he shews by many tokens how much he loves them, and is desirous to promote their welfare.
+

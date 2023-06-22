@@ -4,8 +4,11 @@ For converting Calvin Commentaries copied from CCEL word documents to markdown (
 # Instructions
 ## Install python requirements
 ```
+python3 -m venv venv
+source ./venv/bin/activate
 pip3 install -r requirements.txt
 ```
+
 Note that pandoc will use default python, so whatever version of python is ran by `python` command (2 or 3) will be what pandoc uses. But we want to use latest version of pandoc, and so use python3 (our script will specify that for us). 
 
 Therefore, don't install using `pip3 install`, but use `pip install`
@@ -32,24 +35,6 @@ Tested with: `pandoc 2.16.2`
 You can confirm it's new enough by running: `pandoc --help | grep lua-filter`
 - Should show the option
 
-
-## List style
-Docs: https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?75
-
-## Bullet style
-Maybe will want to use different format, e.g., some with asterisk, some with dash? Though better is probably to format in Obsidian itself, leave the text itself alone.
-
-## Compact mode bullets
-https://stackoverflow.com/questions/39576747/use-compact-lists-when-converting-from-docx-to-markdown
-
-Summary: No flag for this, 
-
-
-# split markdown into separate files
-
-Options: 
-- https://github.com/goetzf/Split-Markdown-for-Ulysses
-- https://stackoverflow.com/questions/33889814/how-do-i-split-a-markdown-file-into-separate-files-at-the-heading
 
 # Usage Patterns
 ## Jan 2022

@@ -1,0 +1,2 @@
+This folder for putting files you finished running through Chat GPT API already, and don't want to ingest again. 
+- Note that the script runs through files in the same order everytime, so if you don't move finished files to this folder, then guaranteed it will do those same files all again first. 
